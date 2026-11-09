@@ -1,0 +1,13 @@
+# Build output
+/tray-sound.exe
+/tray-sound.exe~
+/dist/
+*.wixpdb
+
+# Runtime log (older builds wrote it next to the exe)
+*.log
+
+# Unused sound files (only sound1.wav and sound2.wav are embedded)
+/sounds/*
+!/sounds/sound1.wav
+!/sounds/sound2.wav

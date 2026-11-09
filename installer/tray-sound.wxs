@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Per-machine MSI for tray-sound. Requires admin rights (UAC prompt).
+
+  - Installs to C:\Program Files\tray-sound\
+  - Autostart for every user: HKLM\Software\Microsoft\Windows\CurrentVersion\Run\tray-sound
+  - Starts the app for the installing user after an interactive install
+    (not on silent /qn installs, so GPO/SCCM deployments don't start it as SYSTEM)
+  - Stops running tray-sound.exe copies before install, upgrade and uninstall
+  - The app logs to %LOCALAPPDATA%\tray-sound\tray-sound.log (per user)
+
+  Build with build-msi.bat. Required -d variables: Version, ExePath.
+  NEVER change UpgradeCode: upgrades rely on it.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+  <Package Name="Tray Sound"
+           Manufacturer="Tray Sound"
+           Version="$(Version)"
+           UpgradeCode="8B9B8E8B-A1DD-4076-9C36-EC01A1738C23"
+           Scope="perMachine"
+           Compressed="yes">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Tray Sound is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- Add/Remove Programs entry -->
+    <Icon Id="bell.ico" SourceFile="$(sys.SOURCEFILEDIR)bell.ico" />
+    <Property Id="ARPPRODUCTICON" Value="bell.ico" />
+    <Property Id="ARPNOMODIFY" Value="1" />
+    <Property Id="ARPNOREPAIR" Value="1" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="tray-sound" />
+    </StandardDirectory>
+
+    <Component Id="MainExe" Directory="INSTALLFOLDER">
+      <File Id="TrayExe" Name="tray-sound.exe" Source="$(ExePath)" KeyPath="yes" />
+
+      <!-- Autostart at logon for every user; removed automatically on uninstall. -->
+      <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Run"
+                     Name="tray-sound" Type="string" Value="&quot;[#TrayExe]&quot;" />
+    </Component>
+
+    <!-- Kill running copies so the exe is not locked (install, upgrade, uninstall). -->
+    <util:CloseApplication Id="CloseTraySound"
+                           Target="tray-sound.exe"
+                           TerminateProcess="0"
+                           RebootPrompt="no" />
+
+    <!--
+      Start the app after an interactive install/upgrade. Scheduled in the UI
+      sequence, which runs in the non-elevated client process, so the app runs
+      as the logged-on user, not as admin or SYSTEM. Skipped with /qn.
+    -->
+    <CustomAction Id="LaunchTraySound"
+                  FileRef="TrayExe"
+                  ExeCommand=""
+                  Return="asyncNoWait"
+                  Impersonate="yes" />
+    <InstallUISequence>
+      <Custom Action="LaunchTraySound" After="ExecuteAction"
+              Condition="NOT (REMOVE~=&quot;ALL&quot;)" />
+    </InstallUISequence>
+  </Package>
+</Wix>

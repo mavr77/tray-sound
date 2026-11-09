@@ -13,11 +13,16 @@ Only one copy runs per user session.
 
 ## Download
 
-Get the latest build from the [Releases](../../releases) page:
+Latest version (these links always point to the newest release):
 
-- **`tray-sound-<version>.msi`**: installs to `C:\Program Files\tray-sound\`
-  and starts automatically at logon for every user. Needs administrator rights.
-- **`tray-sound.exe`**: the program alone, no installation. Run it directly.
+- **[tray-sound.msi](https://github.com/mavr77/tray-sound/releases/latest/download/tray-sound.msi)**:
+  installs to `C:\Program Files\tray-sound\` and starts automatically at logon
+  for every user. Needs administrator rights.
+- **[tray-sound.exe](https://github.com/mavr77/tray-sound/releases/latest/download/tray-sound.exe)**:
+  the program alone, no installation. Run it directly.
+
+Release notes and older versions: [latest release](https://github.com/mavr77/tray-sound/releases/latest) ·
+[all releases](https://github.com/mavr77/tray-sound/releases).
 
 The files are not code-signed, so Windows SmartScreen may warn on first run
 (choose **More info → Run anyway**).
@@ -57,9 +62,19 @@ Then:
 build-msi.bat 1.0.0
 ```
 
-Output: `dist\tray-sound-1.0.0.msi` and `dist\tray-sound.exe`.
+Output: `dist\tray-sound-1.0.0.msi`, the same file as `dist\tray-sound.msi`,
+and `dist\tray-sound.exe`.
 Keep the `UpgradeCode` in `installer\tray-sound.wxs` unchanged so new versions
 upgrade old ones.
+
+### Publishing a release
+
+Upload the versionless names so the "latest" links in this README keep working:
+
+```bat
+build-msi.bat 1.0.1
+gh release create v1.0.1 dist\tray-sound.msi dist\tray-sound.exe --title "Tray Sound 1.0.1" --generate-notes
+```
 
 ## Project layout
 
